@@ -1,5 +1,5 @@
 import { Column, Entity } from "typeorm";
-import { BaseEntity } from "./base.entity";
+import { BaseEntity } from "../config/base.entity";
 
 @Entity({name: "user"})
 export class UserEntity extends BaseEntity {
@@ -14,14 +14,15 @@ export class UserEntity extends BaseEntity {
     @Column({
         type: "varchar",
         length: 255,
-        nullable: false
+        nullable: false,
+        unique: true
     })
     email!: string
 
     @Column({
         type: "varchar",
         length: 255,
-        nullable: false
+        nullable: false,
     })
     password!: string
 }
