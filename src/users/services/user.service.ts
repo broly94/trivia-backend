@@ -39,7 +39,7 @@ export class UserService extends ConfigServer {
         return await userRepository.findOne({ where: { id: idUser } })
     }
 
-    async getLoginUser(email: string) {
+    async LoginUser(email: string) {
         const userRepository = (await this.Connection).getRepository(UserEntity)
         return await userRepository.findOne({ where: { email: email } })
        

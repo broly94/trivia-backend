@@ -14,7 +14,8 @@ export class UserController extends UserService {
             const users = await this.getAllUsers()
             users == null || undefined && res.status(404).json({ message: "User not found", error: true })
             return res.status(200).json({
-                users
+                users,
+                userLoggin: req.user
             })
         } catch (error) {
             res.status(400).json({ message: error })
@@ -23,7 +24,6 @@ export class UserController extends UserService {
 
     public async getUser(req: Request, res: Response) {
         const { id } = req.params
-        console.log(id)
         try {
             const user = await this.getOneUser(id)
             user == null && res.status(404).json({ message: "User not found", error: true })
@@ -37,7 +37,6 @@ export class UserController extends UserService {
 
     public async postUser(req: Request, res: Response) {
         const { name, email, password } = req.body;
-
         try {
             await this.registerUser(name, email, password)
             res.json({
@@ -52,9 +51,10 @@ export class UserController extends UserService {
     public async login(req: Request, res: Response) {
         const { email, password } = req.body;
         try {
-            const user = await this.getLoginUser(email)
+            const user = await this.LoginUser(email)
+            !user && res.status(403).json({message: 'Invalid user', error: true})
             const isValid = bcrypt.compareSync(password, user!.password);
-            if(!isValid) return res.status(403).json({message: 'Invalid password', error: true})
+            !isValid && res.status(403).json({message: 'Invalid password', error: true})
             const secret = process.env.TOKEN_SECRET || "secretwebtoken"
             const token = jwt.sign(user!.name, secret)
             return res.status(200).json({
