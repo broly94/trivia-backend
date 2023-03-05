@@ -3,10 +3,7 @@ import { ConfigServer } from "../../config/configServer";
 import bcrypt from 'bcrypt'
 
 interface IUser {
-    id: number,
-    createdAt: Date,
-    updateAt: Date,
-    name: String,
+    name?: String,
     email: String,
     password: String
 }
@@ -23,7 +20,6 @@ export class UserService extends ConfigServer {
     
     async getAllUsers(): Promise<IUser[]> {
         const userRepository = (await this.Connection).getRepository(UserEntity)
-        this.Connection.finally()
         return await userRepository.find()
     }
     
@@ -42,6 +38,5 @@ export class UserService extends ConfigServer {
     async LoginUser(email: string) {
         const userRepository = (await this.Connection).getRepository(UserEntity)
         return await userRepository.findOne({ where: { email: email } })
-       
     }
 }

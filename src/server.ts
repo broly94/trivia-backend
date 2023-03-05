@@ -28,10 +28,14 @@ class ServerBootstrap extends ConfigServer{
 
     private async dbConntect() {
         try {
-            await this.typeORMConfig().initialize()
+            const conn = await this.typeORMConfig().initialize()
+            
+            if(!conn) {
+                throw new Error()
+            }
             console.log("Db connection successful")
         } catch (error) {
-            throw Error("Error catch connection db" + error)
+            console.log({message: `No se pudo conecar a la DB: ${error}`})
         }
     }
 
