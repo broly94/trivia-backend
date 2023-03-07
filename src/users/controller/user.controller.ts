@@ -1,8 +1,5 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/user.service";
-import bcrypt from 'bcrypt'
-import jwt from "jsonwebtoken";
-import config from "../../config/config";
 
 export class UserController extends UserService {
 
@@ -17,10 +14,14 @@ export class UserController extends UserService {
 
             return res.status(200).json({
                 users,
-                userLoggin: req.user
+                userLoggin: req.user,
+                error: false
             })
         } catch (error) {
-            res.status(400).json({ message: `${error}` })
+            res.status(400).json({
+                message: `${error}`,
+                error: true
+            })
         }
     }
 
@@ -35,10 +36,14 @@ export class UserController extends UserService {
                 throw new Error('User not found')
             }
             return res.status(200).json({
-                user
+                user,
+                error: false
             })
         } catch (error) {
-            res.status(400).json({ message: `${error}` })
+            res.status(400).json({
+                message: `${error}`,
+                error: true
+            })
         }
     }
 
@@ -48,62 +53,40 @@ export class UserController extends UserService {
 
         try {
 
-            if (!name || !email || !password) {
-                throw new Error('Fill in the empty fields: Name, Email and Password are required')
-            }
-
-            if (name.length <= 0 || name.length <= 3){
-                throw new Error('Name cannot be empty or greater than 3 characters')
-            }
-
             await this.registerUser(name, email, password, points, role)
 
             return res.json({
-                message: 'User registration successful'
+                message: 'User registration successful',
+                error: false
             })
 
         } catch (error) {
             const err = `${error}`
             if (err.includes('Duplicate entry')) {
-                res.status(400).json({ message: "The email is already in use ", error: true })
+                res.status(400).json({
+                    message: "The email is already in use ",
+                    error: true
+                })
             } else {
-                res.status(400).json({ message: `${error}`, error: true })
+                res.status(400).json({
+                    message: `${error}`,
+                    error: true
+                })
             }
         }
     }
 
-    public async login(req: Request, res: Response) {
-
-        const { email, password } = req.body;
-
+    async deleteUser(req: Request, res: Response) {
+        const { id } = req.params
         try {
-
-            if (!email || !password) {
-                throw new Error('Please enter valid email or password')
-            }
-
-            const user = await this.LoginUser(email)
-
-            if(user === null) {
-                throw new Error("The user does not is registered")
-            }
-
-            const isValid = bcrypt.compareSync(password, user.password)
-            if (!isValid) {
-                throw new Error("The password or the user does not match")
-            }
-
-            const secret = config.jwtSecret
-            const token = jwt.sign({ user: user.name, email: user.email }, secret, { expiresIn: '24h' })
-
+            await this.eliminateUser(Number(id))
             return res.status(200).json({
-                user,
-                token
+                message: 'User deleted',
+                error: false
             })
-
         } catch (error) {
             res.status(400).json({ message: `${error}`, error: true })
-
         }
     }
+
 }

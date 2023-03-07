@@ -6,10 +6,6 @@ import { UserEntity } from "../entities/user.entitiy"
 
 export abstract class ConfigServer {
 
-    constructor() {
-        this.dbConntect()
-    }
-
     private options: DataSourceOptions = {
         type: "mysql",
         host: "localhost",
@@ -27,15 +23,5 @@ export abstract class ConfigServer {
         return new DataSource(this.options)
     }
 
-    protected async dbConntect() {
-        try {
-            const conn = await this.typeORMConfig().initialize()
-            if (!conn) {
-                throw new Error()
-            }
-            console.log("Db connection successful")
-        } catch (error) {
-            console.log({ message: `No se pudo conecar a la DB: ${error}` })
-        }
-    }    
+    
 }

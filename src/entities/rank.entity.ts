@@ -14,5 +14,5 @@ export class RankEntity extends BaseEntity {
 
     @ManyToOne(() => UserEntity, (user) => user.rank)
     @JoinColumn({name: 'user_id'})
-    users: UserEntity
+    user: UserEntity
 }

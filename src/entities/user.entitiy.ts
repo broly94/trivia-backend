@@ -1,9 +1,9 @@
+import 'reflect-metadata'
 import { Column, Entity, OneToMany } from "typeorm";
 import bcrypt from 'bcrypt'
-import {  IsEmail, IsEnum, IsInt, IsJWT, IsNotEmpty, IsString, Min, MinLength } from "class-validator";
-
 import { BaseEntity } from "../config/base.entity";
 import { RankEntity } from "./rank.entity";
+
 
 export enum UserRole {
     ADMIN = "admin",
@@ -13,37 +13,44 @@ export enum UserRole {
 @Entity({ name: "user" })
 export class UserEntity extends BaseEntity {
 
-    @Column({ type: 'varchar' })
-    @IsNotEmpty()
-    @IsString()
-    @MinLength(3)
+    @Column({
+        type: "varchar",
+        nullable: false,
+    })
     name: string
 
-    @Column({ type: 'varchar', unique: true })
-    @IsEmail()
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(5)
+    @Column({
+        type: "varchar",
+        nullable: false,
+        unique: true,
+    })
     email: string
 
-    @Column({ type: 'varchar' })
-    @IsString()
-    @IsNotEmpty()
-    @MinLength(5)
+    @Column({
+        type: "varchar",
+        nullable: false,
+    })
     password: string
 
-    @Column({ type: 'integer', default: 0})
-    @IsInt()
-    @Min(0)
+    @Column({
+        type: "integer",
+        nullable: true,
+        default: 0
+    })
     points: number
 
-    @Column({ type: 'enum', default: [UserRole.USER], enum: UserRole })
-    @IsEnum(UserRole)
+    @Column({
+        type: 'enum',
+        default: [UserRole.USER],
+        enum: UserRole
+    })
     role: Enumerator<UserRole> | undefined
 
-    @Column({ type: 'varchar', default: 0 })
-    @IsJWT()
-    @IsString()
+    @Column({
+        type: "varchar",
+        nullable: true, 
+        default: null
+     })
     resetTokenPassword: string
 
     hashPassword(password: string): string {
@@ -52,6 +59,6 @@ export class UserEntity extends BaseEntity {
         return pass
     }
 
-    @OneToMany(() => RankEntity, (rank) => rank.users)
+    @OneToMany(() => RankEntity, (rank) => rank.user)
     rank: RankEntity
 }

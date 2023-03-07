@@ -9,8 +9,11 @@ export class UserRoutes extends BaseRoutes<UserController,UserMiddleware > {
 
     routes(): void {
         this.router.get('/users', this.middleware.authenticateToken, (req, res) => this.controller.getUsers(req, res))
-        this.router.get('/user/:id', (req, res) => this.controller.getUser(req, res))
-        this.router.post('/login', (req, res) => this.controller.login(req, res))
-        this.router.post('/user', (req, res) => this.controller.postUser(req, res))
+
+        this.router.get('/user/:id', this.middleware.authenticateToken, (req, res) => this.controller.getUser(req, res))
+
+        this.router.post('/user', this.middleware.validate, (req, res) => this.controller.postUser(req, res))
+        
+        this.router.delete('/user/:id', this.middleware.authenticateToken, (req, res) => this.controller.deleteUser(req, res))
     }
 }
