@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import config from '../../config/config';
 
 declare module 'express' {
   interface Request {
@@ -15,7 +16,7 @@ export class UserMiddleware {
 
       if (token == null) return res.status(401).json({ status: '401 Unauthorized', error: true })
 
-      const userVerify = jwt.verify(token, process.env.TOKEN_SECRET || "secretwebtoken")
+      const userVerify = jwt.verify(token, config.jwtSecret)
       if (userVerify == null) return res.status(403).json({ message: "error" })
 
       req.user = userVerify

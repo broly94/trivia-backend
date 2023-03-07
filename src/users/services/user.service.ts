@@ -1,42 +1,29 @@
-import { UserEntity } from "../../entities/user.entitiy";
-import { ConfigServer } from "../../config/configServer";
-import bcrypt from 'bcrypt'
+import { UserEntity, UserRole } from "../../entities/user.entitiy";
+import { BaseServices } from "../../config/base.services";
 
-interface IUser {
-    name?: String,
-    email: String,
-    password: String
-}
+export class UserService extends BaseServices {
 
-export class UserService extends ConfigServer {
 
-    protected Connection = this.typeORMConfig().initialize()
-    private saltRounds: number = 10
+    public userEntity: UserEntity = new UserEntity()
     
-    constructor() {
-        super();
-       
-    }
-    
-    async getAllUsers(): Promise<IUser[]> {
-        const userRepository = (await this.Connection).getRepository(UserEntity)
-        return await userRepository.find()
-    }
-    
-    async registerUser(name: string, email: string, password: string): Promise<void> { 
-        const passwordHash = bcrypt.hashSync(password, this.saltRounds);
-        (await this.Connection).getRepository(UserEntity).save({ name, email, password: passwordHash })
-        this.Connection.finally()
+    async getAllUsers(): Promise<UserEntity[]> {
+        const data = (await this.managerEntity()).find(UserEntity)
+        return data
     }
 
-    async getOneUser(id: string): Promise<IUser | null> {
+    async registerUser(name: string, email: string, password: string, points?: number, role?: Enumerator<UserRole>) {
+        const passwordHash = this.userEntity.hashPassword(password)
+        const user = (await this.managerEntity()).insert(UserEntity,{ name, email, password: passwordHash, points, role })
+        return user
+    }
+
+    async getOneUser(id: string): Promise<UserEntity | null> {
         const idUser = Number(id)
-        const userRepository = (await this.Connection).getRepository(UserEntity)
-        return await userRepository.findOne({ where: { id: idUser } })
+        return (await this.managerEntity()).findOne(UserEntity, { where: { id: idUser } })
     }
 
     async LoginUser(email: string) {
-        const userRepository = (await this.Connection).getRepository(UserEntity)
-        return await userRepository.findOne({ where: { email: email } })
+        const user = (await this.managerEntity()).findOne(UserEntity, { where: { email: email } })
+        return user
     }
 }

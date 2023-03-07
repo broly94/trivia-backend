@@ -6,10 +6,10 @@ export class BaseRoutes<T, M> {
     public controller: T;
     public middleware: M;
 
-    constructor(TController: { new(): T }, MController: { new(): M }) {
+    constructor(TController: { new(): T }, TMiddleware: { new(): M }) {
         this.router = Router();
         this.controller = new TController()
-        this.middleware = new MController()
+        this.middleware = new TMiddleware()
         this.routes()
     }
 

@@ -3,18 +3,18 @@ import { CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "type
 export abstract class BaseEntity {
 
     @PrimaryGeneratedColumn("increment")
-    id!: number;
+    id: number;
 
     @CreateDateColumn({
         name: "created_ad",
         type: "timestamp"
     })
-    createdAt!: Date;
+    createdAt: Date;
 
     @UpdateDateColumn({
         name: "updated_ad",
         type: "timestamp"
     })
-    updateAt!: Date;
+    updateAt: Date;
 
 }
