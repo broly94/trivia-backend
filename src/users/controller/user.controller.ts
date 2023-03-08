@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
+import config from "../../config/config";
 import { UserService } from "../services/user.service";
+import jwt from 'jsonwebtoken'
+
 
 export class UserController extends UserService {
 
@@ -89,4 +92,39 @@ export class UserController extends UserService {
         }
     }
 
+    async sendEmailForgotPassword(req: Request, res: Response) {
+        try {
+            const { email } = req.body
+            const { message, link } = await this.forgotPassword(email)
+            return res.status(200).json({
+                message,
+                link,
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
+    }
+
+    async updateForgotPassword(req: Request, res: Response) {
+
+        try {
+            const resetToken = req.resetToken
+            const password = req.body.password
+            console.log(resetToken)
+            const message = this.createNewPassword(password, resetToken)
+
+            const secret = config.jwtSecret
+            const isValid = jwt.verify(resetToken, secret)
+            if (!isValid) {
+                console.log("error en el jwt")
+            }
+            return res.status(200).json({
+                message,
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
+    }
 }

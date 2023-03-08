@@ -8,13 +8,14 @@ import { UserDTO } from '../../shared/DTO/user.dto';
 declare module 'express' {
   interface Request {
     user?: any;
+    resetToken?: any
   }
 }
 export class UserMiddleware {
 
   public authenticateToken(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log(req.headers)
+
       const authHeader = req.headers.authorization
       const token = authHeader && authHeader.split(' ')[1]
 
@@ -27,6 +28,18 @@ export class UserMiddleware {
 
       next()
 
+    } catch (error) {
+      res.status(400).json({ message: error })
+    }
+  }
+
+  public forgotPasswordToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const newPassword = req.body.password
+      const resetToken = req.headers.reset
+      if (newPassword == null || resetToken == null) return res.status(400).json({ status: '400 Bad Request', error: true })
+      req.resetToken = resetToken
+      next()
     } catch (error) {
       res.status(400).json({ message: error })
     }
