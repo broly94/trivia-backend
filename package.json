@@ -6,8 +6,9 @@
   "license": "MIT",
   "scripts": {
     "tsc": "tsc",
-    "start": "tsc && node dist/server.js",
-    "start:dev": "tsc && concurrently \" tsc -w \" \" nodemon dist/server.js \" "
+    "start": "node dist/server.js",
+    "start:dev": "set NODE_ENV=development && tsc && concurrently \" tsc -w \" \" nodemon dist/server.js \" ",
+    "build": "tsc"
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
