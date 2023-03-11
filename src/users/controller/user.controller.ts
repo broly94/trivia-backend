@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import config from "../../config/config";
-import { UserService } from "../services/user.service";
 import jwt from 'jsonwebtoken'
 
+import { UserService } from "../services/user.service";
 
 export class UserController extends UserService {
 
@@ -52,11 +52,11 @@ export class UserController extends UserService {
 
     public async postUser(req: Request, res: Response) {
 
-        const { name, email, password, points, role } = req.body;
+        const { name, email, password } = req.body;
 
         try {
 
-            await this.registerUser(name, email, password, points, role)
+            await this.registerUser(name, email, password)
 
             return res.json({
                 message: 'User registration successful',
@@ -79,10 +79,36 @@ export class UserController extends UserService {
         }
     }
 
-    async deleteUser(req: Request, res: Response) {
+    async updateUser(req: Request, res: Response) {
+
         const { id } = req.params
+        const { name } = req.body
+
+        try {
+
+            const user = await this.changeDataUser(Number(id), name)
+
+            if (user.affected === 0) {
+                throw new Error('user could not update')
+            }
+
+            return res.status(200).json({
+                message: 'User updated successfully',
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
+
+    }
+
+    async deleteUser(req: Request, res: Response) {
+
+        const { id } = req.params
+
         try {
             await this.eliminateUser(Number(id))
+
             return res.status(200).json({
                 message: 'User deleted',
                 error: false
@@ -92,12 +118,26 @@ export class UserController extends UserService {
         }
     }
 
+
+    async changePassword(req: Request, res: Response) {
+        
+        const { id } = req.params
+
+    }
+
+    /** Forgot Password methods */
+
     async sendEmailForgotPassword(req: Request, res: Response) {
         try {
             const { email } = req.body
-            const { message, link } = await this.forgotPassword(email)
+            const { messageSuccess, link, messageError } = await this.forgotPassword(email)
+
+            if (messageError) {
+                throw new Error(messageError)
+            }
+
             return res.status(200).json({
-                message,
+                messageSuccess,
                 link,
                 error: false
             })
@@ -109,18 +149,18 @@ export class UserController extends UserService {
     async updateForgotPassword(req: Request, res: Response) {
 
         try {
-            const resetToken = req.resetToken
+            const resetToken = req.tokenForgotPassword
             const password = req.body.password
-            console.log(resetToken)
-            const message = this.createNewPassword(password, resetToken)
 
-            const secret = config.jwtSecret
-            const isValid = jwt.verify(resetToken, secret)
-            if (!isValid) {
-                console.log("error en el jwt")
+            await this.createNewForgotPassword(password, resetToken)
+
+            const isValid = jwt.verify(resetToken, config.jwt.jwtSecret)
+            if (isValid == null) {
+                throw new Error("The token is not valid")
             }
+
             return res.status(200).json({
-                message,
+                message: "Reset password successfully",
                 error: false
             })
         } catch (error) {

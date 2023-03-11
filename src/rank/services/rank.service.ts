@@ -1,13 +1,14 @@
 import { MoreThan } from "typeorm"
-import { BaseServices } from "../../config/base.services"
+import { myDataSource } from "../../config/configServer"
 import { RankEntity } from "../../entities/rank.entity"
 import { RankDTO } from "../../shared/DTO/rank.dto"
 
-export class RankService extends BaseServices {
+export class RankService {
 
+    public rankRepository = myDataSource.getRepository(RankEntity)
 
     async getAllRank() {
-        const rank = (await this.managerEntity()).find(RankEntity, {
+        const rank = this.rankRepository.find({
             relations: {
                 user: true
             },
@@ -39,7 +40,8 @@ export class RankService extends BaseServices {
     }
 
     async insertUserToRank(id: number) {
-        return await (await this.managerEntity()).insert(RankEntity, { user_id: id })
+        const userRank = this.rankRepository.create({ user_id: id })
+        await this.rankRepository.save(userRank)
     }
 
 }

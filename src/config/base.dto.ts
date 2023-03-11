@@ -4,14 +4,14 @@ export class BaseDTO {
 
     @IsOptional()
     @IsNumber()
-    id: number;
+    id?: number;
 
     @IsOptional()
     @IsDate()
-    createdAt: Date;
+    createdAt?: Date;
 
     @IsOptional()
     @IsDate()
-    updateAt: Date;
+    updateAt?: Date;
 
 }

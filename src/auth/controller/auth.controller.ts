@@ -31,7 +31,7 @@ export class AuthController extends AuthService{
                 throw new Error("The password or the user does not match")
             }
 
-            const secret = config.jwtSecret
+            const secret = config.jwt.jwtSecret
             const token = jwt.sign({ user: user.name, email: user.email }, secret, { expiresIn: '24h' })
 
             return res.status(200).json({
