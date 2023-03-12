@@ -1,7 +1,6 @@
 import { MoreThan } from "typeorm"
 import { myDataSource } from "../../config/configServer"
 import { RankEntity } from "../../entities/rank.entity"
-import { RankDTO } from "../../shared/DTO/rank.dto"
 
 export class RankService {
 
@@ -33,15 +32,25 @@ export class RankService {
             }
         })
 
-        const rankDTO = (await rank).map(data => {
-            return new RankDTO(data.user_id, data.user.name, data.user.email, data.user.points);
+        const rankStruct = (await rank).map(data => {
+            return new RankStruct(data.user_id, data.user.name, data.user.email, data.user.points);
         })
-        return Object.assign(rankDTO)
+        return Object.assign(rankStruct)
     }
 
-    async insertUserToRank(id: number) {
-        const userRank = this.rankRepository.create({ user_id: id })
-        await this.rankRepository.save(userRank)
-    }
+}
 
+class  RankStruct {
+    
+    public id: number
+    public name: string
+    public email: string
+    public points: number
+
+    constructor(id: number, name: string, email: string, points: number) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.points = points;
+    }
 }

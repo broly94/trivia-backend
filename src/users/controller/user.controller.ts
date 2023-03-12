@@ -118,11 +118,27 @@ export class UserController extends UserService {
         }
     }
 
+    //Hacerla una funcion interna. Ejecutarla cuando se actualiza el usaurio
 
     async changePassword(req: Request, res: Response) {
-        
-        const { id } = req.params
 
+        const { password, newPassword } = req.body 
+        const userLoggin = req.user
+        try {
+
+            const user = await this.setNewPassword(password, newPassword, userLoggin)
+            
+            if(!user ||user?.affected === 0) {
+                throw new Error('The passwords do not match')
+            }
+
+            return res.json({
+                message: 'Password changed successfully',
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
     }
 
     /** Forgot Password methods */

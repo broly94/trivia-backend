@@ -10,7 +10,6 @@ export class RankRoutes extends BaseRoutes<RankController, RankMiddleware> {
     }
 
     routes(): void {
-        this.router.get('/rank', (req, res) => this.controller.getRank(req, res))
-        this.router.post('/rank/:id', (req, res) => this.controller.postRank(req, res))
+        this.router.get('/rank', this.middleware.rankAuth, (req, res) => this.controller.getRank(req, res))
     }
 }

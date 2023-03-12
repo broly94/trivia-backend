@@ -18,23 +18,4 @@ export class RankController extends RankService {
             })
         }
     }
-
-
-    async postRank(req: Request, res: Response) {
-
-        const user_id = Number(req.params.id)
-        
-        try {
-            await this.insertUserToRank(user_id)
-            return res.status(200).json({
-                message: "User registered successfully in rank",
-                error: false
-            })
-        } catch (error) {
-            return res.status(404).json({
-                messageError: `Error inserting user into rank: ${error}`,
-                error: true
-            })
-        }
-    }
 }

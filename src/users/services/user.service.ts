@@ -3,6 +3,8 @@ import { RankEntity } from "../../entities/rank.entity";
 import config from "../../config/config";
 
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
+
 import { myDataSource } from "../../config/configServer";
 import transporter from '../../shared/email/transporter'
 
@@ -43,6 +45,27 @@ export class UserService {
     async eliminateUser(id: number) {
         await this.rankRepository.delete({ user_id: id })
         await this.userRepository.delete({ id: id })
+    }
+
+    async setNewPassword(password: string, newPassword: string, userLoggin: any) {
+
+        //Certificamos que estamos logeados
+        if(userLoggin == null) return 
+
+        //Obtenemos el usuario logeado para acceder a su password
+        const user = await this.userRepository.findOne({ where: { id: userLoggin.id } })
+
+        //Comparamos la password ingresada con la password de la db
+        const passwordsAreSame = await bcrypt.compare(password, user!!.password)
+
+        if(!passwordsAreSame) return
+
+        //Hasheamos la nueva password
+        const passwordHash = this.userEntity.hashPassword(newPassword)
+
+        //Actualiza el usuario con la password nueva y lo retorna
+        return await this.userRepository.update({ id: userLoggin!.id }, { password: passwordHash })
+
     }
 
     /** Forgot Password */

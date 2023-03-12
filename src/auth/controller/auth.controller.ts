@@ -20,8 +20,6 @@ export class AuthController extends AuthService{
 
             const user = await this.LoginUser(email)
 
-            console.log(user)
-
             if (user === null) {
                 throw new Error("The user does not is registered")
             }
@@ -32,7 +30,7 @@ export class AuthController extends AuthService{
             }
 
             const secret = config.jwt.jwtSecret
-            const token = jwt.sign({ user: user.name, email: user.email }, secret, { expiresIn: '24h' })
+            const token = jwt.sign({ id: user.id, user: user.name, email: user.email }, secret, { expiresIn: '24h' })
 
             return res.status(200).json({
                 user,
