@@ -1,27 +1,42 @@
-import { UserEntity, UserRole } from "../../entities/user.entitiy";
-import { RankEntity } from "../../entities/rank.entity";
-import config from "../../config/config";
+import { Repository } from "typeorm";
+import config from "../../config/config"
 
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-
-import { myDataSource } from "../../config/configServer";
 import transporter from '../../shared/email/transporter'
+
+/** Entities */
+import { UserEntity } from "../../entities/user.entitiy"
+
+/** DTO */
+import { UserLoginDTO } from "../dto/userLogin.dto";
 
 export class UserService {
 
-    public verificationLiinkEmail: string = `http://${config.init.host}:${config.init.port}`
+    constructor(private readonly userEntity: UserEntity, private userRepository: Repository<UserEntity>) { }
 
-    public userEntity: UserEntity = new UserEntity()
+    private linkForSendEmail: string = `http://${config.init.host}:${config.init.port}`
 
-    public userRepository = myDataSource.getRepository(UserEntity)
-
-    public rankRepository = myDataSource.getRepository(RankEntity)
+    /** 
+    *    Called by getUsers in controller
+    *    This func return all users 
+    *    @return Array of users
+    */
 
     async getAllUsers(): Promise<UserEntity[]> {
 
+        // return await this.userRepository.createQueryBuilder('user').select().orderBy('RAND()').take(3).getMany()
         return await this.userRepository.find()
     }
+
+    /** 
+    *    Called by postUser in controller 
+    *    This func create a new user
+    *    @param name
+    *    @param email
+    *    @param password
+    *    @return void
+    */
 
     async registerUser(name: string, email: string, password: string) {
 
@@ -30,46 +45,97 @@ export class UserService {
         const user = this.userRepository.create({ name, email, password: passwordHash })
 
         await this.userRepository.save(user)
-        
+
     }
+
+    /** 
+    *    Called by getUser in controller
+    *    This func return one user by id 
+    *    @param id
+    *    @return User | null
+    */
 
     async getOneUser(id: string): Promise<UserEntity | null> {
         const idUser = Number(id)
         return this.userRepository.findOne({ where: { id: idUser } })
     }
 
-    async changeDataUser(id: number, name: string,) {
-        return await this.userRepository.update({ id }, { name })
+    /** 
+    *    Called by updateUser in controller
+    *    This func update one user by id 
+    *    @param id
+    *    @param name
+    *    @return void
+    */
+
+    async changeDataUser(id: number, name: string) {
+        await this.userRepository.update({ id }, { name })
     }
 
+    /** 
+    *    Called by deleteUser in controller
+    *    This func delete one user by id and delete the user for ranking 
+    *    @param id
+    *    @return void
+    */
+
     async eliminateUser(id: number) {
-        await this.rankRepository.delete({ user_id: id })
         await this.userRepository.delete({ id: id })
     }
 
-    async setNewPassword(password: string, newPassword: string, userLoggin: any) {
+    /** 
+    *    Called by changePassword in controller
+    *    This func change the password of one user 
+    *    @param id
+    *    @param password
+    *    @param newPassword
+    *    @param userLoggin
+    *    @return User updated
+    */
 
-        //Certificamos que estamos logeados
-        if(userLoggin == null) return 
+    async setNewPassword(password: string, newPassword: string, userLogin: Express.Request["user"]) {
 
-        //Obtenemos el usuario logeado para acceder a su password
-        const user = await this.userRepository.findOne({ where: { id: userLoggin.id } })
+        const user = await this.userRepository.findOne({ where: { id: userLogin.id } })
 
-        //Comparamos la password ingresada con la password de la db
-        const passwordsAreSame = await bcrypt.compare(password, user!!.password)
+        const passwordsAreSame = await bcrypt.compare(password, user!.password)
 
-        if(!passwordsAreSame) return
+        if (!passwordsAreSame) return
 
-        //Hasheamos la nueva password
         const passwordHash = this.userEntity.hashPassword(newPassword)
 
-        //Actualiza el usuario con la password nueva y lo retorna
-        return await this.userRepository.update({ id: userLoggin!.id }, { password: passwordHash })
+        return await this.userRepository.update({ id: userLogin.id }, { password: passwordHash })
 
     }
 
-    /** Forgot Password */
+    /** The functions forgot password */
 
+    /** 
+    *    Called by getUsersByPoints in controller
+    *    This func return all users by given points
+    *    @return Users[]
+    */
+
+    async getUsersRank(): Promise<UserEntity[]> {
+        return await this.userRepository.find({
+            select: {
+                name: true,
+                points: true 
+            },
+            order: {
+                points: 'DESC'
+            }
+        })
+    }
+
+
+    /** The functions forgot password */
+
+    /** 
+    *    Called by sendEmailForgotPassword in controller
+    *    This func send email to the user for the password reset 
+    *    @param email
+    *    @return Object
+    */
     async forgotPassword(email: string) {
 
         const messageSuccess = "Check the link in your email"
@@ -82,17 +148,17 @@ export class UserService {
 
         const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '24h' })
 
-        const link = `${this.verificationLiinkEmail}/new-password/${token}`
+        const link = `${this.linkForSendEmail}/new-password/${token}`
 
         await this.userRepository.update(user!.id, { resetTokenPassword: token })
 
-        // Enviar email para cambiar la password
+        // Send email notification for password change
         await transporter.sendMail({
-            from: '"Recuperar contraseña 👻" <leonel.carro94@gmail.com>', // sender address
+            from: '"Recuperar tu contraseña" <leonel.carro94@gmail.com>', // sender address
             to: user.email, // list of receivers
-            subject: "Recuperar contraseña  ✔", // Subject line
+            subject: "TriviaApp", // Subject line
             html: `
-                <b>Perdió su contraseña?</b>
+                <b>Perdiste tu contraseña?</b>
                 <a href="${link}" target="_blank">Haga click aqui para cambiarla</a>
             `, // html body
         });
@@ -101,13 +167,22 @@ export class UserService {
 
     }
 
-    async createNewForgotPassword(newPassword: string, resetToken: string) {
+
+    /** 
+    *    Called by updateForgotPassword in controller
+    *    This func find user by resetToken and update password 
+    *    @param newPassword
+    *    @param resetToken
+    *    @return void
+    */
+
+    async createNewForgotPassword(newPassword: string, resetToken: Express.Request["tokenForgotPassword"]): Promise<void> {
 
         const user = await this.userRepository.findOne({ where: { resetTokenPassword: resetToken } })
 
         const newPasswordHash = this.userEntity.hashPassword(newPassword)
 
-        return await this.userRepository.update({ id: user!.id }, { password: newPasswordHash })
+        await this.userRepository.update({ id: user!.id }, { password: newPasswordHash })
 
     }
 }

@@ -1,9 +1,7 @@
 import 'reflect-metadata'
-import { Column, Entity, OneToMany } from "typeorm";
+import { Column, Entity } from "typeorm";
 import bcrypt from 'bcrypt'
 import { BaseEntity } from "../config/base.entity";
-import { RankEntity } from "./rank.entity";
-
 
 export enum UserRole {
     ADMIN = "admin",
@@ -58,7 +56,4 @@ export class UserEntity extends BaseEntity {
         const pass = bcrypt.hashSync(password, salt)
         return pass
     }
-
-    @OneToMany(() => RankEntity, (rank) => rank.user)
-    rank: RankEntity
 }

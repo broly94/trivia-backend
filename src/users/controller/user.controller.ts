@@ -4,9 +4,21 @@ import jwt from 'jsonwebtoken'
 
 import { UserService } from "../services/user.service";
 
+import { myDataSource } from "../../config/database";
+
+/** Entities */
+import { UserEntity } from "../../entities/user.entitiy";
+
 export class UserController extends UserService {
 
-    public async getUsers(req: Request, res: Response) {
+    constructor(){
+
+        /** Dependency injection */
+        super(new UserEntity, myDataSource.getRepository(UserEntity));
+
+    }
+
+    async getUsers(req: Request, res: Response) {
 
         try {
             const users = await this.getAllUsers()
@@ -17,7 +29,7 @@ export class UserController extends UserService {
 
             return res.status(200).json({
                 users,
-                userLoggin: req.user,
+                userLoging: req.user,
                 error: false
             })
         } catch (error) {
@@ -28,7 +40,7 @@ export class UserController extends UserService {
         }
     }
 
-    public async getUser(req: Request, res: Response) {
+    async getUser(req: Request, res: Response) {
 
         const { id } = req.params
 
@@ -50,7 +62,7 @@ export class UserController extends UserService {
         }
     }
 
-    public async postUser(req: Request, res: Response) {
+    async postUser(req: Request, res: Response) {
 
         const { name, email, password } = req.body;
 
@@ -81,14 +93,14 @@ export class UserController extends UserService {
 
     async updateUser(req: Request, res: Response) {
 
-        const { id } = req.params
+        const { id } = req.user
         const { name } = req.body
 
         try {
 
             const user = await this.changeDataUser(Number(id), name)
 
-            if (user.affected === 0) {
+            if (user === undefined) {
                 throw new Error('user could not update')
             }
 
@@ -118,15 +130,13 @@ export class UserController extends UserService {
         }
     }
 
-    //Hacerla una funcion interna. Ejecutarla cuando se actualiza el usaurio
-
     async changePassword(req: Request, res: Response) {
 
         const { password, newPassword } = req.body 
-        const userLoggin = req.user
+        const userLogin = req.user
         try {
 
-            const user = await this.setNewPassword(password, newPassword, userLoggin)
+            const user = await this.setNewPassword(password, newPassword, userLogin)
             
             if(!user ||user?.affected === 0) {
                 throw new Error('The passwords do not match')
@@ -139,6 +149,26 @@ export class UserController extends UserService {
         } catch (error) {
             res.status(400).json({ message: `${error}`, error: true })
         }
+    }
+
+    async getUsersByPoints(req: Request, res: Response) {
+        
+        try {
+
+            const users = await this.getUsersRank()
+
+            if(!users){
+                throw new Error('Users not found')
+            }
+
+            return res.status(200).json({
+                users,
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: ``, error: true})
+        }
+
     }
 
     /** Forgot Password methods */

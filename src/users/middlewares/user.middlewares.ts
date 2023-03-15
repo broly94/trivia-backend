@@ -6,20 +6,16 @@ import { AuthMiddleware } from '../../auth/middlewares/auth.middlewares';
 /** DTO */
 import { UserCreateDTO } from '../dto/create.dto';
 import { UserUpdateDTO } from '../dto/update.dto';
-
-declare module 'express' {
-  interface Request {
-    user?: any;
-    tokenForgotPassword?: any
-  }
-}
+import { UserChangePasswordDTO } from '../dto/changePassword.dto';
+import { UserCreateNewForgotDTO } from '../dto/createNewForgotPassword.dto';
+import { UserSendEmailForgotPasswordDTO } from '../dto/sendEmailforgotPassword.dto';
 
 export class UserMiddleware extends AuthMiddleware {
 
-  public userAuth (req: Request, res: Response, next: NextFunction) {
+  public userAuth(req: Request, res: Response, next: NextFunction) {
     AuthMiddleware.authenticateToken(req, res, next)
   }
-  
+
   public forgotPasswordToken(req: Request, res: Response, next: NextFunction) {
     try {
 
@@ -28,7 +24,7 @@ export class UserMiddleware extends AuthMiddleware {
 
       if (newPassword == null || resetTokenForgotPassword == null) return res.status(400).json({ status: '400 Bad Request', error: true })
 
-      req.tokenForgotPassword = resetTokenForgotPassword
+      req.tokenForgotPassword = JSON.stringify(resetTokenForgotPassword)
 
       next()
     } catch (error) {
@@ -85,6 +81,73 @@ export class UserMiddleware extends AuthMiddleware {
       res.status(400).json({ message: error })
     }
 
+  }
+
+  async validateChangePasswordDTO(req: Request, res: Response, next: NextFunction) {
+    const { password, newPassword } = req.body
+
+    let valid = new UserChangePasswordDTO()
+    valid.password = password
+    valid.newPassword = newPassword
+
+    const errors = await validate(valid)
+
+    try {
+      if (errors.length > 0) {
+        return res.status(500).json({
+          errors,
+          error: true
+        })
+      } else {
+        next()
+      }
+    } catch (error) {
+      res.status(400).json({ message: error })
+    }
+  }
+
+  async validateCreateNewForgotPasswordDTO(req: Request, res: Response, next: NextFunction) {
+    const { password } = req.body
+
+    let valid = new UserCreateNewForgotDTO()
+    valid.password = password
+
+    const errors = await validate(valid)
+
+    try {
+      if (errors.length > 0) {
+        return res.status(500).json({
+          errors,
+          error: true
+        })
+      } else {
+        next()
+      }
+    } catch (error) {
+      res.status(400).json({ message: error })
+    }
+  }
+
+  async validateEmailForgotPasswordDTO(req: Request, res: Response, next: NextFunction) {
+    const { email } = req.body
+
+    let valid = new UserSendEmailForgotPasswordDTO()
+    valid.email = email
+
+    const errors = await validate(valid)
+
+    try {
+      if (errors.length > 0) {
+        return res.status(500).json({
+          errors,
+          error: true
+        })
+      } else {
+        next()
+      }
+    } catch (error) {
+      res.status(400).json({ message: error })
+    }
   }
 
 }

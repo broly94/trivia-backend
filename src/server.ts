@@ -7,12 +7,12 @@ import morgan from 'morgan'
 import cors from 'cors'
 import config from './config/config'
 
-import { myDataSource } from './config/configServer'
+import { myDataSource } from './config/database'
 
 /* Routes */
 import { UserRoutes } from './users/routes/user.routes'
-import { RankRoutes } from './rank/routes/rank.routes'
 import { AuthRoutes } from './auth/routes/auth.routes'
+import { QuestionRoutes } from './questions/routes/question.routes'
 /* Routes */
 
 class ServerBootstrap {
@@ -23,15 +23,13 @@ class ServerBootstrap {
     constructor() {
         this.app.use(morgan('dev'))
         this.app.use(express.json())
-        this.app.use(express.urlencoded({ extended: true }))
+        this.app.use(express.urlencoded({ extended: false }))
         this.app.use(cors())
         this.dbConntect()
         this.app.use('/api', this.routes())
         this.listen()
        
     }
-
-
 
     listen() {
         this.app.listen(this.port, () => {
@@ -45,15 +43,15 @@ class ServerBootstrap {
             await myDataSource.initialize()
             console.log("Db connection successful")
         } catch (error) {
-            console.log({ message: `No se pudo conecar a la DB: ${error}` })
+            console.log({ message: `could not connect to database: ${error}` })
         }
     }    
 
     private routes(): Array<express.Router> {
         return [
             new UserRoutes().router,
-            new RankRoutes().router,
-            new AuthRoutes().router
+            new AuthRoutes().router,
+            new QuestionRoutes().router
         ]
     }
 }
