@@ -1,13 +1,11 @@
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+
+import { LevelTypes } from "../questions/interfaces/question.interfaces";
+
 import { BaseEntity } from "../config/base.entity";
 import { AnswerEntity } from "./answer.entity";
 import { CategoryEntity } from "./category.entity";
 
-export enum LevelTypes {
-    basic = "BASIC",
-    medium = "MEDIUM",
-    advanced = "ADVANCED"
-}
 
 @Entity('question')
 export class QuestionEntity extends BaseEntity {

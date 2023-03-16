@@ -5,6 +5,7 @@ import { QuestionService } from "../services/question.service"
 import { QuestionEntity } from "../../entities/question.entity"
 import { AnswerEntity } from "../../entities/answer.entity"
 import { CategoryEntity } from "../../entities/category.entity"
+import { LevelTypes } from "../interfaces/question.interfaces"
 
 
 export class QuestionController extends QuestionService {
@@ -16,25 +17,49 @@ export class QuestionController extends QuestionService {
     private quantityQuestions: number = 10
 
     async getQuestion(req: Request, res: Response) {
-        
-        try {
-            const questions = await this.getAllQuestions(this.quantityQuestions)
-            
-            if(questions.length == 0) return res.status(200).json({ message: "Question not found", error: false})
 
-            if(!questions) throw new Error("Could not get the questions")
+        const level = req.query.level as LevelTypes
+
+        try {
+            const questions = await this.getAllQuestionsAnyCategory(level, this.quantityQuestions)
+
+            if (questions.length == 0) return res.status(200).json({ message: "Question not found", error: false })
+
+            if (!questions) throw new Error("Could not get the questions")
 
             return res.status(200).json({
                 questions,
                 error: false
             })
         } catch (error) {
-            res.status(404).json({ message: `${error}`, error: true})
+            res.status(404).json({ message: `${error}`, error: true })
+        }
+    }
+
+    async getQuestionsByLevel(req: Request, res: Response) {
+
+        const level = req.query.level as LevelTypes
+
+        try {
+
+            const questions = await this.getAllQuestionsByLevel(level, this.quantityQuestions)
+
+            if (questions.length == 0) return res.status(200).json({ message: "Question not found", error: false })
+
+            if (!questions) throw new Error("Could not get the questions")
+
+            return res.status(200).json({
+                questions,
+                error: false
+            })
+
+        } catch (error) {
+            res.status(404).json({ message: `${error}`, error: true })
         }
     }
 
     async postQuestion(req: Request, res: Response) {
-        
+
         const { question, level, points, category, answers } = req.body
 
         try {
@@ -45,7 +70,7 @@ export class QuestionController extends QuestionService {
                 error: false
             })
         } catch (error) {
-            res.status(404).json({ message: `${error}`, error: true})            
+            res.status(404).json({ message: `${error}`, error: true })
         }
     }
 

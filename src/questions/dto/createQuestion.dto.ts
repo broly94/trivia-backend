@@ -1,11 +1,9 @@
 import { IsArray, IsDecimal, IsEnum, IsInt, IsNotEmpty, IsString } from "class-validator";
 import { BaseDTO } from "../../config/base.dto";
-import { LevelTypes } from "../../entities/question.entity";
+import { Answers, LevelTypes } from "../interfaces/question.interfaces";
 
-export interface Answers {
-    name: string,
-    is_true: boolean
-}
+
+
 
 export class CreateQuestionDTO extends BaseDTO {
 
