@@ -1,10 +1,12 @@
 import { DataSource} from "typeorm"
+import config from "./config"
+
 import { SnakeNamingStrategy } from "typeorm-naming-strategies"
+
 import { AnswerEntity } from "../entities/answer.entity"
 import { CategoryEntity } from "../entities/category.entity"
 import { QuestionEntity } from "../entities/question.entity"
 import { UserEntity } from "../entities/user.entitiy"
-import config from "./config"
 
 export const myDataSource = new DataSource({
     type: "mysql",

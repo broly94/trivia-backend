@@ -10,7 +10,7 @@ export class AuthMiddleware {
           const authHeader = req.headers.authorization
           const token = authHeader && authHeader.split(' ')[1]
     
-          if (token == null) return res.status(401).json({ status: '401 Unauthorized', error: true })
+          if (token == null) return res.status(401).json({ status: '401 Unauthorized', error: true, token: null })
     
           const userVerify = jwt.verify(token, config.jwt.jwtSecret)
           if (userVerify == null) return res.status(403).json({ message: "error" })

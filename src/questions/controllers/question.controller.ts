@@ -1,11 +1,14 @@
 import { Request, Response } from "express"
+
 import { myDataSource } from "../../config/database"
+
 import { QuestionService } from "../services/question.service"
+
+import { LevelTypes } from "../interfaces/question.interfaces"
 
 import { QuestionEntity } from "../../entities/question.entity"
 import { AnswerEntity } from "../../entities/answer.entity"
 import { CategoryEntity } from "../../entities/category.entity"
-import { LevelTypes } from "../interfaces/question.interfaces"
 
 
 export class QuestionController extends QuestionService {
@@ -36,13 +39,14 @@ export class QuestionController extends QuestionService {
         }
     }
 
-    async getQuestionsByLevel(req: Request, res: Response) {
+    async getQuestionsByLevelAndCategory(req: Request, res: Response) {
 
         const level = req.query.level as LevelTypes
+        const category = req.query.category as string
 
         try {
 
-            const questions = await this.getAllQuestionsByLevel(level, this.quantityQuestions)
+            const questions = await this.getAllQuestionsByLevelAndCategory(category, level, this.quantityQuestions)
 
             if (questions.length == 0) return res.status(200).json({ message: "Question not found", error: false })
 

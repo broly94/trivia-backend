@@ -12,7 +12,7 @@ export class QuestionRoutes extends BaseRoutes<QuestionController, QuestionMiddl
         
         this.router.get('/questions', this.middleware.userAuth, this.middleware.validateQueryLevelQuestions, (req, res) => this.controller.getQuestion(req, res))
 
-        this.router.get('/questions-level', this.middleware.userAuth, this.middleware.validateQueryLevelQuestions, (req, res) => this.controller.getQuestionsByLevel(req, res))
+        this.router.get('/questions-level', this.middleware.userAuth, this.middleware.validateQueryLevelAndCategoryQuestions, (req, res) => this.controller.getQuestionsByLevelAndCategory(req, res))
 
         this.router.post('/question', this.middleware.userAuth, this.middleware.validateCreateQuestionDTO ,(req, res) => this.controller.postQuestion(req, res))
         

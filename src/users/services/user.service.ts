@@ -8,9 +8,6 @@ import transporter from '../../shared/email/transporter'
 /** Entities */
 import { UserEntity } from "../../entities/user.entitiy"
 
-/** DTO */
-import { UserLoginDTO } from "../dto/userLogin.dto";
-
 export class UserService {
 
     constructor(private readonly userEntity: UserEntity, private userRepository: Repository<UserEntity>) { }
@@ -24,8 +21,6 @@ export class UserService {
     */
 
     async getAllUsers(): Promise<UserEntity[]> {
-
-        // return await this.userRepository.createQueryBuilder('user').select().orderBy('RAND()').take(3).getMany()
         return await this.userRepository.find()
     }
 

@@ -13,7 +13,7 @@ export class CreateQuestionDTO extends BaseDTO {
 
     @IsNotEmpty()
     @IsEnum(LevelTypes)
-    level: Enumerator<LevelTypes> | undefined
+    level: LevelTypes
 
     @IsNotEmpty()
     @IsInt()

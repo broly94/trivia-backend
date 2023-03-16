@@ -17,7 +17,7 @@ export class QuestionService {
      * @returns Questions[]
      */
 
-    async getAllQuestionsAnyCategory(level:LevelTypes ,quantityQuestions: number) {
+    async getAllQuestionsAnyCategory(level: LevelTypes, quantityQuestions: number) {
         return await this.questionRepository.createQueryBuilder('question')
             .leftJoinAndSelect("question.answers", "answer")
             .leftJoinAndSelect("question.category", "category")
@@ -45,13 +45,13 @@ export class QuestionService {
      * @returns Questions[] by level
      */
 
-    async getAllQuestionsByLevel(level: LevelTypes, quantityQuestions: number) {
+    async getAllQuestionsByLevelAndCategory(category: string, level: LevelTypes, quantityQuestions: number) {
 
         return await this.questionRepository.createQueryBuilder('question')
             .leftJoinAndSelect("question.answers", "answer")
             .leftJoinAndSelect("question.category", "category")
             .where("question.level = :level", { level })
-            .andWhere("category.name = :category", {category: "futbol"})
+            .andWhere("category.name = :category", { category })
             .select(
                 [
                     "question.id",
@@ -88,8 +88,8 @@ export class QuestionService {
         await this.questionRepository.save(newQuestion)
     }
 
-    async changeQuestion(){
-        
+    async changeQuestion() {
+
     }
 
 }

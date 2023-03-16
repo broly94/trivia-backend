@@ -13,6 +13,7 @@ import { myDataSource } from './config/database'
 import { UserRoutes } from './users/routes/user.routes'
 import { AuthRoutes } from './auth/routes/auth.routes'
 import { QuestionRoutes } from './questions/routes/question.routes'
+import { CategoryRoutes } from './categories/routes/category.routes'
 /* Routes */
 
 class ServerBootstrap {
@@ -51,7 +52,8 @@ class ServerBootstrap {
         return [
             new UserRoutes().router,
             new AuthRoutes().router,
-            new QuestionRoutes().router
+            new QuestionRoutes().router,
+            new CategoryRoutes().router
         ]
     }
 }

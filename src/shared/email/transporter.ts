@@ -4,10 +4,10 @@ import config from '../../config/config';
  let transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
-    secure: true, // true for 465, false for other ports
+    secure: true, 
     auth: {
-      user: "leonel.carro94@gmail.com", // generated ethereal user
-      pass: config.mail.passwordGmail, // generated ethereal password
+      user: "leonel.carro94@gmail.com",
+      pass: config.mail.passwordGmail
     },
   })
 
