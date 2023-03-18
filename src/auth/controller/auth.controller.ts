@@ -8,6 +8,7 @@ import { AuthService } from "../services/auth.service";
 import { myDataSource } from "../../config/database";
 import { UserEntity } from "../../entities/user.entitiy";
 
+import { User } from "../interfaces/auth.interfaces";
 
 export class AuthController extends AuthService{
 
@@ -39,9 +40,16 @@ export class AuthController extends AuthService{
             const secret = config.jwt.jwtSecret
             const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, secret, { expiresIn: '24h' })
 
-            return res.status(200).json({
-                user,
+            const UserDTO: User = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                points: user.points,
                 token
+            }
+
+            return res.status(200).json({
+                userLogin: UserDTO,
             })
 
         } catch (error) {
