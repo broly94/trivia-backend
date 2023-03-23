@@ -11,7 +11,7 @@ import { UserEntity } from "../../entities/user.entitiy";
 
 export class UserController extends UserService {
 
-    constructor(){
+    constructor() {
 
         /** Dependency injection */
         super(new UserEntity, myDataSource.getRepository(UserEntity));
@@ -79,7 +79,7 @@ export class UserController extends UserService {
             const err = `${error}`
             if (err.includes('Duplicate entry')) {
                 res.status(400).json({
-                    message: "The email is already in use ",
+                    message: "The email or name are already in use",
                     error: true
                 })
             } else {
@@ -100,7 +100,7 @@ export class UserController extends UserService {
 
             const user = await this.changeDataUser(Number(id), name)
 
-            if (user === undefined) {
+            if (user.affected == 0) {
                 throw new Error('user could not update')
             }
 
@@ -109,7 +109,18 @@ export class UserController extends UserService {
                 error: false
             })
         } catch (error) {
-            res.status(400).json({ message: `${error}`, error: true })
+            const err = `${error}`
+            if (err.includes('Duplicate entry')) {
+                res.status(400).json({
+                    message: "The name is already in use",
+                    error: true
+                })
+            } else {
+                res.status(400).json({
+                    message: `${error}`,
+                    error: true
+                })
+            }
         }
 
     }
@@ -132,13 +143,13 @@ export class UserController extends UserService {
 
     async changePassword(req: Request, res: Response) {
 
-        const { password, newPassword } = req.body 
+        const { password, newPassword } = req.body
         const userLogin = req.user
         try {
 
             const user = await this.setNewPassword(password, newPassword, userLogin)
-            
-            if(!user ||user?.affected === 0) {
+
+            if (!user || user?.affected === 0) {
                 throw new Error('The passwords do not match')
             }
 
@@ -152,12 +163,12 @@ export class UserController extends UserService {
     }
 
     async getUsersByPoints(req: Request, res: Response) {
-        
+
         try {
 
             const users = await this.getUsersRank()
 
-            if(!users){
+            if (!users) {
                 throw new Error('Users not found')
             }
 
@@ -166,7 +177,7 @@ export class UserController extends UserService {
                 error: false
             })
         } catch (error) {
-            res.status(400).json({ message: ``, error: true})
+            res.status(400).json({ message: ``, error: true })
         }
 
     }
@@ -176,7 +187,7 @@ export class UserController extends UserService {
     async sendEmailForgotPassword(req: Request, res: Response) {
         try {
             const { email } = req.body
-            const { messageSuccess, link, messageError } = await this.forgotPassword(email)
+            const { messageSuccess, link, messageError, token } = await this.forgotPassword(email)
 
             if (messageError) {
                 throw new Error(messageError)
@@ -185,6 +196,7 @@ export class UserController extends UserService {
             return res.status(200).json({
                 messageSuccess,
                 link,
+                token,
                 error: false
             })
         } catch (error) {
@@ -195,9 +207,9 @@ export class UserController extends UserService {
     async updateForgotPassword(req: Request, res: Response) {
 
         try {
-            const resetToken = req.tokenForgotPassword
+            const resetToken = req.headers.token as string
             const password = req.body.password
-
+            console.log(resetToken)
             await this.createNewForgotPassword(password, resetToken)
 
             const isValid = jwt.verify(resetToken, config.jwt.jwtSecret)
@@ -213,4 +225,33 @@ export class UserController extends UserService {
             res.status(400).json({ message: `${error}`, error: true })
         }
     }
+
+
+    async getUserTokenResetPassword(req: Request, res: Response) {
+        const token = req.query.token as string
+        try {
+            const user = await this.getTokenResetPassword(token)
+            console.log(user)
+            return res.status(200).json({
+                user,
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
+    }
+
+    async deleteUserTokenResetPassword(req: Request, res: Response) {
+        const token = req.query.token as string
+        try {
+            await this.deleteTokenResetPassword(token)
+            return res.status(200).json({ 
+                message: 'Delete token reset password successful',
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: `${error}`, error: true })
+        }
+    }
+
 }

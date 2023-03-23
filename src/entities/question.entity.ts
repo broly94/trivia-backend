@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
 
 import { LevelTypes } from "../questions/interfaces/question.interfaces";

@@ -8,11 +8,13 @@ import transporter from '../../shared/email/transporter'
 /** Entities */
 import { UserEntity } from "../../entities/user.entitiy"
 
+import { v4 as uuidv4 } from 'uuid'
+
 export class UserService {
 
     constructor(private readonly userEntity: UserEntity, private userRepository: Repository<UserEntity>) { }
 
-    private linkForSendEmail: string = `http://${config.init.host}:${config.init.port}`
+    // private linkForSendEmail: string = `${config.init.host_client}`
 
     /** 
     *    Called by getUsers in controller
@@ -64,7 +66,7 @@ export class UserService {
     */
 
     async changeDataUser(id: number, name: string) {
-        await this.userRepository.update({ id }, { name })
+        return await this.userRepository.update({ id }, { name })
     }
 
     /** 
@@ -114,7 +116,7 @@ export class UserService {
         return await this.userRepository.find({
             select: {
                 name: true,
-                points: true 
+                points: true
             },
             order: {
                 points: 'DESC'
@@ -141,9 +143,11 @@ export class UserService {
 
         if (user === null) return { messageError }
 
-        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '24h' })
+        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '1h' })
 
-        const link = `${this.linkForSendEmail}/new-password/${token}`
+        const url_random = uuidv4()
+
+        const link = `${config.init.host_client}/new-password/${url_random}/?token=${token}`
 
         await this.userRepository.update(user!.id, { resetTokenPassword: token })
 
@@ -151,17 +155,25 @@ export class UserService {
         await transporter.sendMail({
             from: '"Recuperar tu contraseña" <leonel.carro94@gmail.com>', // sender address
             to: user.email, // list of receivers
-            subject: "TriviaApp", // Subject line
+            subject: "Trivia App", // Subject line
             html: `
-                <b>Perdiste tu contraseña?</b>
-                <a href="${link}" target="_blank">Haga click aqui para cambiarla</a>
-            `, // html body
+                <h1 style='text-center; color:white; font-weight:bold;'>Trivia<b style='text-center; color:yellow; font-weight:bold;'>App</b></h1> 
+                <div style='display:flex; flex-wrap:wrap; flex-direction:column; align-items:center; justify-content:center; background-color: #27272a; width: 100%; padding: 15px;'>
+                    <h3 style='text-align:center; color:white; font-size: 20px'>¿Perdiste tu contraseña?</h3>
+                    </br>
+                    </br>
+                    <a href="${link}" target="_blank">Ir a cambiar mi contraseña</a>
+                </div>
+            `
         });
 
-        return { messageSuccess, link }
+        return {
+            messageSuccess,
+            link,
+            token
+        }
 
     }
-
 
     /** 
     *    Called by updateForgotPassword in controller
@@ -180,4 +192,31 @@ export class UserService {
         await this.userRepository.update({ id: user!.id }, { password: newPasswordHash })
 
     }
+
+    /** 
+    *    Called by getUserTokenResetPassword in controller
+    *    This func return the user for the token reset password
+    *    @param token
+    *    @return User for the token reset password
+    */
+
+    async getTokenResetPassword(token: string) {
+
+        return await this.userRepository.find({ where: { resetTokenPassword: token } })
+
+    }
+
+    /** 
+   *    Called by deleteUserTokenResetPassword in controller
+   *    This func delete the reset token password
+   *    @param token
+   *    @return void
+   */
+
+    async deleteTokenResetPassword(token: string) {
+        const user = await this.userRepository.findOne({ where: { resetTokenPassword: token } })
+        console.log(user)
+        await this.userRepository.update({ id: user!.id }, { resetTokenPassword: '' })
+    }
+
 }

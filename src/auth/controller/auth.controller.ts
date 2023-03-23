@@ -38,7 +38,7 @@ export class AuthController extends AuthService{
             }
 
             const secret = config.jwt.jwtSecret
-            const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, secret, { expiresIn: '24h' })
+            const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, secret, { expiresIn: '2h' })
 
             const UserDTO: User = {
                 id: user.id,

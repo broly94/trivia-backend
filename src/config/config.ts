@@ -1,6 +1,7 @@
 const config = {
     init: {
         host: process.env.HOST,
+        host_client: process.env.HOST_CLIENT || "http://192.168.0.14:5173",
         port: process.env.PORT,
     },
     database: {
@@ -16,7 +17,7 @@ const config = {
     },
     mail: {
         passwordGmail: process.env.PASSWORD_GMAIL
-    }
+    },
 }
 
 export default config;

@@ -35,7 +35,12 @@ export class UserRoutes extends BaseRoutes<UserController,UserMiddleware > {
         this.router.put('/forgot-password', this.middleware.validateEmailForgotPasswordDTO, (req, res) => this.controller.sendEmailForgotPassword(req, res))
 
         //Create new forgot password 
-        this.router.put('/reset-new-password', this.middleware.forgotPasswordToken, this.middleware.validateCreateNewForgotPasswordDTO ,(req, res) => this.controller.updateForgotPassword(req, res))
+        this.router.put('/reset-new-password', this.middleware.validateCreateNewForgotPasswordDTO ,(req, res) => this.controller.updateForgotPassword(req, res))
 
+        //Get user by the token reset password
+        this.router.get('/token-reset-password', (req, res) => this.controller.getUserTokenResetPassword(req, res))
+
+        //Delete the token reset password 
+        this.router.put('/delete-token-reset-password', (req, res) => this.controller.deleteUserTokenResetPassword(req, res))
     }
 }
