@@ -1,7 +1,7 @@
 const config = {
     init: {
         host: process.env.HOST,
-        host_client: process.env.HOST_CLIENT || "http://192.168.0.14:5173",
+        host_client: process.env.HOST_CLIENT,
         port: process.env.PORT,
     },
     database: {

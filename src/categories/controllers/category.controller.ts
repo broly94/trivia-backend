@@ -1,7 +1,7 @@
 import { CategoryService } from "../services/category.service";
 import { myDataSource } from '../../config/database'
 import { CategoryEntity } from "../../entities/category.entity";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 
 export class CategoryController extends CategoryService {
 

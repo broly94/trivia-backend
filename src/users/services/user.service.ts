@@ -183,7 +183,7 @@ export class UserService {
     *    @return void
     */
 
-    async createNewForgotPassword(newPassword: string, resetToken: Express.Request["tokenForgotPassword"]): Promise<void> {
+    async createNewForgotPassword(newPassword: string, resetToken: string): Promise<void> {
 
         const user = await this.userRepository.findOne({ where: { resetTokenPassword: resetToken } })
 
