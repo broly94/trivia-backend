@@ -25,7 +25,10 @@ class ServerBootstrap {
         this.app.use(morgan('dev'))
         this.app.use(express.json())
         this.app.use(express.urlencoded({ extended: false }))
-        this.app.use(cors())
+        this.app.use(cors({
+            origin: '*',
+            credentials: false
+        }))
         this.dbConntect()
         this.app.use('/api', this.routes())
         this.listen()

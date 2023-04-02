@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import config from "../../config/config";
+import { Session, SessionData } from 'express-session'
 
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
@@ -19,7 +20,7 @@ export class AuthController extends AuthService{
     public async AuthUser(req: Request, res: Response) {
 
         const { email, password } = req.body;
-
+        
         try {
 
             if (!email || !password) {
@@ -38,8 +39,9 @@ export class AuthController extends AuthService{
             }
 
             const secret = config.jwt.jwtSecret
+            
             const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, secret, { expiresIn: '2h' })
-
+                        
             const UserDTO: User = {
                 id: user.id,
                 name: user.name,
@@ -47,7 +49,7 @@ export class AuthController extends AuthService{
                 points: user.points,
                 token
             }
-
+         
             return res.status(200).json({
                 userLogin: UserDTO,
             })
