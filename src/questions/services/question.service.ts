@@ -50,8 +50,8 @@ export class QuestionService {
         return await this.questionRepository.createQueryBuilder('question')
             .leftJoinAndSelect("question.answers", "answer")
             .leftJoinAndSelect("question.category", "category")
-            .where("question.level = :level", { level })
-            .andWhere("category.name = :category", { category })
+            .where("category.name = :category", { category })
+            .andWhere("question.level = :level", { level })
             .select(
                 [
                     "question.id",

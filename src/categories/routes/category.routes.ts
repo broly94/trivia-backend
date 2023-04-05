@@ -10,7 +10,7 @@ export class CategoryRoutes  extends BaseRoutes<CategoryController, CategoryMidd
 
     routes(): void {
         
-        this.router.get('/categories', (req, res) => this.controller.getCategory(req, res))
+        this.router.get('/categories', this.middleware.userAuth ,(req, res) => this.controller.getCategory(req, res))
 
     }
 
