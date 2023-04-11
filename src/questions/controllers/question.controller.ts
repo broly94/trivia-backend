@@ -77,5 +77,4 @@ export class QuestionController extends QuestionService {
             res.status(404).json({ message: `${error}`, error: true })
         }
     }
-
 }

@@ -12,6 +12,8 @@
   "dependencies": {
     "@types/cookie-parser": "^1.4.3",
     "@types/express-session": "^1.17.7",
+    "@types/mjml": "^4.7.1",
+    "@types/mustache": "^4.2.2",
     "bcrypt": "^5.1.0",
     "class-validator": "^0.14.0",
     "concurrently": "^7.6.0",
@@ -21,6 +23,8 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.0",
+    "mjml": "^4.14.0",
+    "mustache": "^4.2.0",
     "mysql2": "^3.1.2",
     "nodemailer": "^6.9.1",
     "reflect-metadata": "^0.1.13",

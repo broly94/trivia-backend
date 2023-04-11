@@ -5,6 +5,11 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import transporter from '../../shared/email/transporter'
 
+import fs from 'fs';
+import mjml2html from 'mjml';
+import Mustache from 'mustache'
+
+
 /** Entities */
 import { UserEntity } from "../../entities/user.entitiy"
 
@@ -151,20 +156,20 @@ export class UserService {
 
         await this.userRepository.update(user!.id, { resetTokenPassword: token })
 
+        const params = {
+            link: link
+        }
+        const mjmlTemplate = fs.readFileSync('./src/shared/email/template.mjml', 'utf-8');
+        const plantillaRenderizada = Mustache.render(mjmlTemplate, params);
+
+        const { html } = mjml2html(plantillaRenderizada);
+
         // Send email notification for password change
         await transporter.sendMail({
             from: '"Recuperar tu contraseña" <leonel.carro94@gmail.com>', // sender address
             to: user.email, // list of receivers
             subject: "Trivia App", // Subject line
-            html: `
-                <h1 style='text-center; color:white; font-weight:bold;'>Trivia<b style='text-center; color:yellow; font-weight:bold;'>App</b></h1> 
-                <div style='display:flex; flex-wrap:wrap; flex-direction:column; align-items:center; justify-content:center; background-color: #27272a; width: 100%; padding: 15px;'>
-                    <h3 style='text-align:center; color:white; font-size: 20px'>¿Perdiste tu contraseña?</h3>
-                    </br>
-                    </br>
-                    <a href="${link}" target="_blank">Ir a cambiar mi contraseña</a>
-                </div>
-            `
+            html: html
         });
 
         return {

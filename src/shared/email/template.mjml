@@ -1,0 +1,15 @@
+<mjml>
+  <mj-body>
+    <mj-section >
+
+    <mj-column width="600px">
+
+      <mj-button background-color="#F63A4D" href={{link}} target="_blank">
+        Recuperar contraseña
+      </mj-button>
+
+    </mj-column>
+
+  </mj-section>
+  </mj-body>
+</mjml>
