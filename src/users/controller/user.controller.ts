@@ -141,6 +141,27 @@ export class UserController extends UserService {
         }
     }
 
+
+    async getUsersByPoints(req: Request, res: Response) {
+
+        try {
+
+            const users = await this.getUsersRank()
+
+            if (!users) {
+                throw new Error('Users not found')
+            }
+
+            return res.status(200).json({
+                users,
+                error: false
+            })
+        } catch (error) {
+            res.status(400).json({ message: ``, error: true })
+        }
+
+    }
+
     async changePassword(req: Request, res: Response) {
 
         const { password, newPassword } = req.body
@@ -162,24 +183,17 @@ export class UserController extends UserService {
         }
     }
 
-    async getUsersByPoints(req: Request, res: Response) {
-
+    async setPointsUser(req: Request, res: Response) {
+        const { id, points } = req.body
         try {
-
-            const users = await this.getUsersRank()
-
-            if (!users) {
-                throw new Error('Users not found')
-            }
-
+            await this.setPoints(Number(id), Number(points))
             return res.status(200).json({
-                users,
+                message: 'Points updated successfully',
                 error: false
             })
         } catch (error) {
-            res.status(400).json({ message: ``, error: true })
+            res.status(400).json({ message: `${error}`, error: true })
         }
-
     }
 
     /** Forgot Password methods */
@@ -226,7 +240,6 @@ export class UserController extends UserService {
         }
     }
 
-
     async getUserTokenResetPassword(req: Request, res: Response) {
         const token = req.query.token as string
         try {
@@ -245,7 +258,7 @@ export class UserController extends UserService {
         const token = req.query.token as string
         try {
             await this.deleteTokenResetPassword(token)
-            return res.status(200).json({ 
+            return res.status(200).json({
                 message: 'Delete token reset password successful',
                 error: false
             })

@@ -30,6 +30,9 @@ export class UserRoutes extends BaseRoutes<UserController,UserMiddleware > {
 
         //Get users by points
         this.router.get('/users-rank', (req, res) => this.controller.getUsersByPoints(req, res))
+
+        //Set points to user
+        this.router.put('/set-points', this.middleware.userAuth, (req, res) => this.controller.setPointsUser(req, res))
         
         //Send email forgot password
         this.router.put('/forgot-password', this.middleware.validateEmailForgotPasswordDTO, (req, res) => this.controller.sendEmailForgotPassword(req, res))

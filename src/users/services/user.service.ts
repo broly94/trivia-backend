@@ -4,7 +4,9 @@ import config from "../../config/config"
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import transporter from '../../shared/email/transporter'
+import { v4 as uuidv4 } from 'uuid'
 
+/** Email template */
 import fs from 'fs';
 import mjml2html from 'mjml';
 import Mustache from 'mustache'
@@ -13,7 +15,6 @@ import Mustache from 'mustache'
 /** Entities */
 import { UserEntity } from "../../entities/user.entitiy"
 
-import { v4 as uuidv4 } from 'uuid'
 
 export class UserService {
 
@@ -129,6 +130,9 @@ export class UserService {
         })
     }
 
+    async setPoints(id: number, points: number) {
+        return this.userRepository.update({id}, {points})
+    }
 
     /** The functions forgot password */
 
