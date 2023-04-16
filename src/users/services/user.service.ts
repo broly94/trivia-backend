@@ -131,7 +131,8 @@ export class UserService {
     }
 
     async setPoints(id: number, points: number) {
-        return this.userRepository.update({id}, {points})
+        const user = await this.userRepository.findOne({where: {id}})
+        this.userRepository.update({id}, {points: points + user!.points})
     }
 
     /** The functions forgot password */
