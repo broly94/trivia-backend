@@ -88,8 +88,4 @@ export class QuestionService {
         await this.questionRepository.save(newQuestion)
     }
 
-    async changeQuestion() {
-
-    }
-
 }

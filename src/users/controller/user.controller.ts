@@ -141,7 +141,6 @@ export class UserController extends UserService {
         }
     }
 
-
     async getUsersByPoints(req: Request, res: Response) {
 
         try {

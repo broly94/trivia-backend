@@ -11,7 +11,6 @@ import fs from 'fs';
 import mjml2html from 'mjml';
 import Mustache from 'mustache'
 
-
 /** Entities */
 import { UserEntity } from "../../entities/user.entitiy"
 
@@ -121,6 +120,7 @@ export class UserService {
     async getUsersRank(): Promise<UserEntity[]> {
         return await this.userRepository.find({
             select: {
+                id: true,
                 name: true,
                 points: true
             },
