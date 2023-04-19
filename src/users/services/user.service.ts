@@ -153,17 +153,22 @@ export class UserService {
 
         if (user === null) return { messageError }
 
-        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '1h' })
+        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret as string, { expiresIn: '1h' })
 
         const url_random = uuidv4()
 
         const link = `${config.init.host_client}/new-password/${url_random}/?token=${token}`
 
+        console.log(config.init.host_client)
+        
         await this.userRepository.update(user!.id, { resetTokenPassword: token })
 
         const params = {
             link: link
         }
+
+        console.log(params)
+
         const mjmlTemplate = fs.readFileSync('./src/shared/email/template.mjml', 'utf-8');
         const plantillaRenderizada = Mustache.render(mjmlTemplate, params);
 
