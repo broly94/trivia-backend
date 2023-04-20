@@ -21,8 +21,7 @@ export class UserMiddleware extends AuthMiddleware {
 
       const newPassword = req.body.password
       const resetTokenForgotPassword = req.headers.token
-      console.log(req.header)
-
+      
       if (newPassword == null || resetTokenForgotPassword == null) return res.status(400).json({ status: '400 Bad Request', error: true })
 
       req.tokenForgotPassword = JSON.stringify(resetTokenForgotPassword)

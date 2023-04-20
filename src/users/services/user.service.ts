@@ -153,7 +153,7 @@ export class UserService {
 
         if (user === null) return { messageError }
 
-        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret as string, { expiresIn: '1h' })
+        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '1h' })
 
         const url_random = uuidv4()
 

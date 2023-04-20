@@ -222,10 +222,10 @@ export class UserController extends UserService {
         try {
             const resetToken = req.headers.token as string
             const password = req.body.password
-            console.log(resetToken)
+    
             await this.createNewForgotPassword(password, resetToken)
 
-            const isValid = jwt.verify(resetToken, config.jwt.jwtSecret as string)
+            const isValid = jwt.verify(resetToken, config.jwt.jwtSecret)
             
             if (isValid == null) {
                 throw new Error("The token is not valid")

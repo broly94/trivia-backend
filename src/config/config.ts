@@ -12,7 +12,7 @@ const config = {
         dataBaseName: process.env.NODE_ENV !== 'production' ? 'trivia' : process.env.DB_NAME,
     },
     jwt: {
-        jwtSecret: process.env.NODE_ENV !== 'production' ? 'secret' :process.env.JWT_SECRET,
+        jwtSecret: process.env.NODE_ENV !== 'production' ? 'secret' : process.env.JWT_SECRET || '',
         jwtSecretResetPassword: process.env.NODE_ENV !== 'production' ? 'secretResetPassword' : process.env.JWT_SECRET_RESET_PASSWORD,
     },
     mail: {
