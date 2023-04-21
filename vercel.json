@@ -10,8 +10,7 @@
       {
     
         "src": "/(.*)",
-     
-        "dest": "server.js"
+        "des": "server.js"
       }
     ]
   }
