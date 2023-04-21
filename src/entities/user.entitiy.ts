@@ -2,11 +2,7 @@ import 'reflect-metadata'
 import { Column, Entity } from "typeorm";
 import bcrypt from 'bcrypt'
 import { BaseEntity } from "../config/base.entity";
-
-export enum UserRole {
-    ADMIN = "admin",
-    USER = "user",
-}
+import { UserRole } from '../users/interfaces/user.interfaces';
 
 @Entity({ name: "user" })
 export class UserEntity extends BaseEntity {

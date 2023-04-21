@@ -10,6 +10,7 @@ import { myDataSource } from "../../config/database";
 import { UserEntity } from "../../entities/user.entitiy";
 
 import { User } from "../interfaces/auth.interfaces";
+import { UserRole } from "../../users/interfaces/user.interfaces";
 
 export class AuthController extends AuthService{
 
@@ -47,7 +48,8 @@ export class AuthController extends AuthService{
                 name: user.name,
                 email: user.email,
                 points: user.points,
-                token
+                role: user.role as Enumerator<UserRole>,
+                token: token
             }
          
             return res.status(200).json({
