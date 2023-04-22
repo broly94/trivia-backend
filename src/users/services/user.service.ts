@@ -217,7 +217,9 @@ export class UserService {
 
     async getTokenResetPassword(token: string) {
 
-        return await this.userRepository.find({ where: { resetTokenPassword: token } })
+        const user = await this.userRepository.find({ where: { resetTokenPassword: token } })
+
+        return user[0].resetTokenPassword
 
     }
 
@@ -230,7 +232,6 @@ export class UserService {
 
     async deleteTokenResetPassword(token: string) {
         const user = await this.userRepository.findOne({ where: { resetTokenPassword: token } })
-        console.log(user)
         await this.userRepository.update({ id: user!.id }, { resetTokenPassword: '' })
     }
 

@@ -243,10 +243,9 @@ export class UserController extends UserService {
     async getUserTokenResetPassword(req: Request, res: Response) {
         const token = req.query.token as string
         try {
-            const user = await this.getTokenResetPassword(token)
-            console.log(user)
+            const userToken = await this.getTokenResetPassword(token)
             return res.status(200).json({
-                user,
+                token: userToken,
                 error: false
             })
         } catch (error) {
@@ -258,6 +257,7 @@ export class UserController extends UserService {
         const token = req.query.token as string
         try {
             await this.deleteTokenResetPassword(token)
+            console.log("token deleted")
             return res.status(200).json({
                 message: 'Delete token reset password successful',
                 error: false
