@@ -1,238 +1,267 @@
-import { Repository } from "typeorm";
-import config from "../../config/config"
+import { Repository } from 'typeorm';
+import config from '../../config/config';
 
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
-import transporter from '../../shared/email/transporter'
-import { v4 as uuidv4 } from 'uuid'
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import transporter from '../../shared/email/transporter';
+import { v4 as uuidv4 } from 'uuid';
 
 /** Email template */
 import fs from 'fs';
 import mjml2html from 'mjml';
-import Mustache from 'mustache'
+import Mustache from 'mustache';
 
 /** Entities */
-import { UserEntity } from "../../entities/user.entitiy"
-
+import { UserEntity } from '../../entities/user.entitiy';
+import { UserRankById } from '../dto/userRankById.dto';
 
 export class UserService {
+	constructor(
+		private readonly userEntity: UserEntity,
+		private userRepository: Repository<UserEntity>
+	) {}
 
-    constructor(private readonly userEntity: UserEntity, private userRepository: Repository<UserEntity>) { }
+	// private linkForSendEmail: string = `${config.init.host_client}`
 
-    // private linkForSendEmail: string = `${config.init.host_client}`
+	/**
+	 *    Called by getUsers in controller
+	 *    This func return all users
+	 *    @return Array of users
+	 */
 
-    /** 
-    *    Called by getUsers in controller
-    *    This func return all users 
-    *    @return Array of users
-    */
+	async getAllUsers(): Promise<UserEntity[]> {
+		return await this.userRepository.find();
+	}
 
-    async getAllUsers(): Promise<UserEntity[]> {
-        return await this.userRepository.find()
-    }
+	/**
+	 *    Called by postUser in controller
+	 *    This func create a new user
+	 *    @param name
+	 *    @param email
+	 *    @param password
+	 *    @return void
+	 */
 
-    /** 
-    *    Called by postUser in controller 
-    *    This func create a new user
-    *    @param name
-    *    @param email
-    *    @param password
-    *    @return void
-    */
+	async registerUser(name: string, email: string, password: string) {
+		const passwordHash = this.userEntity.hashPassword(password);
 
-    async registerUser(name: string, email: string, password: string) {
+		const user = this.userRepository.create({ name, email, password: passwordHash });
 
-        const passwordHash = this.userEntity.hashPassword(password)
+		await this.userRepository.save(user);
+	}
 
-        const user = this.userRepository.create({ name, email, password: passwordHash })
+	/**
+	 *    Called by getUser in controller
+	 *    This func return one user by id
+	 *    @param id
+	 *    @return User | null
+	 */
 
-        await this.userRepository.save(user)
+	async getOneUser(id: string): Promise<UserEntity | null> {
+		const idUser = Number(id);
+		return this.userRepository.findOne({ where: { id: idUser } });
+	}
 
-    }
+	/**
+	 *    Called by updateUser in controller
+	 *    This func update one user by id
+	 *    @param id
+	 *    @param name
+	 *    @return void
+	 */
 
-    /** 
-    *    Called by getUser in controller
-    *    This func return one user by id 
-    *    @param id
-    *    @return User | null
-    */
+	async changeDataUser(id: number, name: string) {
+		return await this.userRepository.update({ id }, { name });
+	}
 
-    async getOneUser(id: string): Promise<UserEntity | null> {
-        const idUser = Number(id)
-        return this.userRepository.findOne({ where: { id: idUser } })
-    }
+	/**
+	 *    Called by deleteUser in controller
+	 *    This func delete one user by id and delete the user for ranking
+	 *    @param id
+	 *    @return void
+	 */
 
-    /** 
-    *    Called by updateUser in controller
-    *    This func update one user by id 
-    *    @param id
-    *    @param name
-    *    @return void
-    */
+	async eliminateUser(id: number) {
+		await this.userRepository.delete({ id: id });
+	}
 
-    async changeDataUser(id: number, name: string) {
-        return await this.userRepository.update({ id }, { name })
-    }
+	/**
+	 *    Called by changePassword in controller
+	 *    This func change the password of one user
+	 *    @param id
+	 *    @param password
+	 *    @param newPassword
+	 *    @param userLoggin
+	 *    @return User updated
+	 */
 
-    /** 
-    *    Called by deleteUser in controller
-    *    This func delete one user by id and delete the user for ranking 
-    *    @param id
-    *    @return void
-    */
+	async setNewPassword(password: string, newPassword: string, userLogin: Express.Request['user']) {
+		const user = await this.userRepository.findOne({ where: { id: userLogin.id } });
 
-    async eliminateUser(id: number) {
-        await this.userRepository.delete({ id: id })
-    }
+		const passwordsAreSame = await bcrypt.compare(password, user!.password);
 
-    /** 
-    *    Called by changePassword in controller
-    *    This func change the password of one user 
-    *    @param id
-    *    @param password
-    *    @param newPassword
-    *    @param userLoggin
-    *    @return User updated
-    */
+		if (!passwordsAreSame) return;
 
-    async setNewPassword(password: string, newPassword: string, userLogin: Express.Request["user"]) {
+		const passwordHash = this.userEntity.hashPassword(newPassword);
 
-        const user = await this.userRepository.findOne({ where: { id: userLogin.id } })
+		return await this.userRepository.update({ id: userLogin.id }, { password: passwordHash });
+	}
 
-        const passwordsAreSame = await bcrypt.compare(password, user!.password)
+	/** The functions forgot password */
 
-        if (!passwordsAreSame) return
+	/**
+	 *    Called by getUsersByPoints in controller
+	 *    This func return all users by given points
+	 *    @return Users[]
+	 */
 
-        const passwordHash = this.userEntity.hashPassword(newPassword)
+	async getUsersRank(): Promise<UserEntity[]> {
+		return await this.userRepository.find({
+			select: {
+				id: true,
+				name: true,
+				points: true,
+			},
+			order: {
+				points: 'DESC',
+			},
+		});
+	}
 
-        return await this.userRepository.update({ id: userLogin.id }, { password: passwordHash })
+	/**
+	 *    Called by getUsersByPoints in controller
+	 *    This func return all users by given points
+	 *    @return Users[]
+	 */
 
-    }
+	async getOneUserRankById(id: number): Promise<UserRankById[]> {
+		const users = await this.userRepository.find({
+			select: {
+				id: true,
+				name: true,
+				points: true,
+			},
+			order: {
+				points: 'DESC',
+			},
+		});
+		const userById = users.map((user, index) => {
+			return {
+				id: user.id,
+				name: user.name,
+				points: user.points,
+				position: index + 1,
+			};
+		});
+		return userById.filter((user) => user.id === id);
+	}
 
-    /** The functions forgot password */
+	/**
+	 *    Called by getUsersByPoints in controller
+	 *    This func return all users by given points
+	 *    @return Users[]
+	 */
 
-    /** 
-    *    Called by getUsersByPoints in controller
-    *    This func return all users by given points
-    *    @return Users[]
-    */
+	async setPoints(id: number, points: number) {
+		const user = await this.userRepository.findOne({ where: { id } });
+		this.userRepository.update({ id }, { points: points + user!.points });
+	}
 
-    async getUsersRank(): Promise<UserEntity[]> {
-        return await this.userRepository.find({
-            select: {
-                id: true,
-                name: true,
-                points: true
-            },
-            order: {
-                points: 'DESC'
-            }
-        })
-    }
+	/** The functions forgot password */
 
-    async setPoints(id: number, points: number) {
-        const user = await this.userRepository.findOne({where: {id}})
-        this.userRepository.update({id}, {points: points + user!.points})
-    }
+	/**
+	 *    Called by sendEmailForgotPassword in controller
+	 *    This func send email to the user for the password reset
+	 *    @param email
+	 *    @return Object
+	 */
+	async forgotPassword(email: string) {
+		const messageSuccess = 'Check the link in your email';
 
-    /** The functions forgot password */
+		const messageError = 'The user not found';
 
-    /** 
-    *    Called by sendEmailForgotPassword in controller
-    *    This func send email to the user for the password reset 
-    *    @param email
-    *    @return Object
-    */
-    async forgotPassword(email: string) {
+		const user = await this.userRepository.findOne({ where: { email } });
 
-        const messageSuccess = "Check the link in your email"
+		if (user === null) return { messageError };
 
-        const messageError = "The user not found"
+		const token = jwt.sign(
+			{ id: user!.id, user: user!.name, email: user!.email },
+			config.jwt.jwtSecret,
+			{ expiresIn: '1h' }
+		);
 
-        const user = await this.userRepository.findOne({ where: { email } })
+		const url_random = uuidv4();
 
-        if (user === null) return { messageError }
+		const link = `${config.init.host_client}/new-password/${url_random}/?token=${token}`;
 
-        const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '1h' })
+		console.log(config.init.host_client);
 
-        const url_random = uuidv4()
+		await this.userRepository.update(user!.id, { resetTokenPassword: token });
 
-        const link = `${config.init.host_client}/new-password/${url_random}/?token=${token}`
+		const params = {
+			link: link,
+		};
 
-        console.log(config.init.host_client)
-        
-        await this.userRepository.update(user!.id, { resetTokenPassword: token })
+		console.log(params);
 
-        const params = {
-            link: link
-        }
+		const mjmlTemplate = fs.readFileSync('./src/shared/email/template.mjml', 'utf-8');
+		const plantillaRenderizada = Mustache.render(mjmlTemplate, params);
 
-        console.log(params)
+		const { html } = mjml2html(plantillaRenderizada);
 
-        const mjmlTemplate = fs.readFileSync('./src/shared/email/template.mjml', 'utf-8');
-        const plantillaRenderizada = Mustache.render(mjmlTemplate, params);
+		// Send email notification for password change
+		await transporter.sendMail({
+			from: '"Recuperar tu contraseña" <leonel.carro94@gmail.com>', // sender address
+			to: user.email, // list of receivers
+			subject: 'Trivia App', // Subject line
+			html: html,
+		});
 
-        const { html } = mjml2html(plantillaRenderizada);
+		return {
+			messageSuccess,
+			link,
+			token,
+		};
+	}
 
-        // Send email notification for password change
-        await transporter.sendMail({
-            from: '"Recuperar tu contraseña" <leonel.carro94@gmail.com>', // sender address
-            to: user.email, // list of receivers
-            subject: "Trivia App", // Subject line
-            html: html
-        });
+	/**
+	 *    Called by updateForgotPassword in controller
+	 *    This func find user by resetToken and update password
+	 *    @param newPassword
+	 *    @param resetToken
+	 *    @return void
+	 */
 
-        return {
-            messageSuccess,
-            link,
-            token
-        }
+	async createNewForgotPassword(newPassword: string, resetToken: string): Promise<void> {
+		const user = await this.userRepository.findOne({ where: { resetTokenPassword: resetToken } });
 
-    }
+		const newPasswordHash = this.userEntity.hashPassword(newPassword);
 
-    /** 
-    *    Called by updateForgotPassword in controller
-    *    This func find user by resetToken and update password 
-    *    @param newPassword
-    *    @param resetToken
-    *    @return void
-    */
+		await this.userRepository.update({ id: user!.id }, { password: newPasswordHash });
+	}
 
-    async createNewForgotPassword(newPassword: string, resetToken: string): Promise<void> {
+	/**
+	 *    Called by getUserTokenResetPassword in controller
+	 *    This func return the user for the token reset password
+	 *    @param token
+	 *    @return User for the token reset password
+	 */
 
-        const user = await this.userRepository.findOne({ where: { resetTokenPassword: resetToken } })
+	async getTokenResetPassword(token: string) {
+		const user = await this.userRepository.find({ where: { resetTokenPassword: token } });
 
-        const newPasswordHash = this.userEntity.hashPassword(newPassword)
+		return user[0].resetTokenPassword;
+	}
 
-        await this.userRepository.update({ id: user!.id }, { password: newPasswordHash })
+	/**
+	 *    Called by deleteUserTokenResetPassword in controller
+	 *    This func delete the reset token password
+	 *    @param token
+	 *    @return void
+	 */
 
-    }
-
-    /** 
-    *    Called by getUserTokenResetPassword in controller
-    *    This func return the user for the token reset password
-    *    @param token
-    *    @return User for the token reset password
-    */
-
-    async getTokenResetPassword(token: string) {
-
-        const user = await this.userRepository.find({ where: { resetTokenPassword: token } })
-
-        return user[0].resetTokenPassword
-
-    }
-
-    /** 
-   *    Called by deleteUserTokenResetPassword in controller
-   *    This func delete the reset token password
-   *    @param token
-   *    @return void
-   */
-
-    async deleteTokenResetPassword(token: string) {
-        const user = await this.userRepository.findOne({ where: { resetTokenPassword: token } })
-        await this.userRepository.update({ id: user!.id }, { resetTokenPassword: '' })
-    }
-
+	async deleteTokenResetPassword(token: string) {
+		const user = await this.userRepository.findOne({ where: { resetTokenPassword: token } });
+		await this.userRepository.update({ id: user!.id }, { resetTokenPassword: '' });
+	}
 }
