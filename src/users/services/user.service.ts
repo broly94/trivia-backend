@@ -134,7 +134,7 @@ export class UserService {
 	 *    @return Users[]
 	 */
 
-	async getOneUserRankById(id: number): Promise<UserRankById[]> {
+	async getOneUserRankById(idUser: number): Promise<UserRankById> {
 		const users = await this.userRepository.find({
 			select: {
 				id: true,
@@ -153,7 +153,7 @@ export class UserService {
 				position: index + 1,
 			};
 		});
-		return userById.filter((user) => user.id === id);
+		return userById.find((user) => user.id === idUser)!;
 	}
 
 	/**

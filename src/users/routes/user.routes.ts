@@ -48,7 +48,9 @@ export class UserRoutes extends BaseRoutes<UserController, UserMiddleware> {
 		this.router.get('/users-rank', (req, res) => this.controller.getUsersRankByPoints(req, res));
 
 		//Get user rank by id
-		this.router.get('/user-rank/:id', (req, res) => this.controller.getUserRankById(req, res));
+		this.router.get('/user-rank/:id', this.middleware.userAuth, (req, res) =>
+			this.controller.getUserRankById(req, res)
+		);
 
 		//Set points to user
 		this.router.put('/set-points', this.middleware.userAuth, (req, res) =>

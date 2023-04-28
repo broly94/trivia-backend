@@ -147,7 +147,7 @@ export class UserController extends UserService {
 
 	async getUserRankById(req: Request, res: Response) {
 		const { id } = req.params;
-		if (!id) {
+		if (!id || id === '') {
 			throw new Error('Invalid parameters');
 		}
 		try {
