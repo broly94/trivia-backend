@@ -16,10 +16,7 @@ import { UserEntity } from '../../entities/user.entitiy';
 import { UserRankById } from '../dto/userRankById.dto';
 
 export class UserService {
-	constructor(
-		private readonly userEntity: UserEntity,
-		private userRepository: Repository<UserEntity>
-	) {}
+	constructor(private readonly userEntity: UserEntity, private userRepository: Repository<UserEntity>) {}
 
 	// private linkForSendEmail: string = `${config.init.host_client}`
 
@@ -184,11 +181,7 @@ export class UserService {
 
 		if (user === null) return { messageError };
 
-		const token = jwt.sign(
-			{ id: user!.id, user: user!.name, email: user!.email },
-			config.jwt.jwtSecret,
-			{ expiresIn: '1h' }
-		);
+		const token = jwt.sign({ id: user!.id, user: user!.name, email: user!.email }, config.jwt.jwtSecret, { expiresIn: '1h' });
 
 		const url_random = uuidv4();
 
