@@ -165,7 +165,6 @@ export class UserService {
 	}
 
 	/** The functions forgot password */
-
 	/**
 	 *    Called by sendEmailForgotPassword in controller
 	 *    This func send email to the user for the password reset

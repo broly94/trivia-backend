@@ -16,7 +16,6 @@ export class UserController extends UserService {
 	}
 
 	async getUsers(req: Request, res: Response) {
-		console.log(process.env.HOST_CLIENT_PRODUCTION);
 		try {
 			const users = await this.getAllUsers();
 
